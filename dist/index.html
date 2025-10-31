@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Callio Fax Access Portal</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configure Tailwind to use the specific colors from the screenshot -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // Colors based on the provided screenshot
+                        't-dark-bg': '#1E272E', // Main page background
+                        't-card-dark': '#2C3A47', // Card header color
+                        't-accent-orange': '#FF7F50', // Orange line accent
+                        't-button-ms': '#0078D4', // Standard Microsoft blue
+                        't-success': '#4CAF50', // Green checkmark color
+                        't-text-light': '#E0E0E0',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Load Font Awesome for the Microsoft logo -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <style>
+        /* Custom styles to integrate the icon look and feel */
+        .document-icon-container {
+            position: relative;
+            display: inline-block;
+            width: 120px;
+            height: 120px;
+        }
+
+        .document-icon {
+            color: #f7fafc; /* White document */
+            width: 100px;
+            height: 100px;
+        }
+
+        .checkmark-icon {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background-color: #4CAF50;
+            border-radius: 9999px;
+            padding: 4px;
+            color: white;
+            box-shadow: 0 0 0 5px #1E272E; /* Mimics the background color border */
+        }
+    </style>
+</head>
+<body class="bg-t-dark-bg flex items-center justify-center min-h-screen p-4 font-sans">
+
+    <!-- Main Fax Notification Card -->
+    <div class="w-full max-w-md bg-t-card-dark rounded-xl shadow-2xl overflow-hidden">
+        
+        <!-- Header Section (CALLIO) -->
+        <header class="p-6 border-b-4 border-t-accent-orange">
+            <h1 class="text-t-text-light text-2xl font-bold tracking-wider">
+                CALLIO
+                <!-- Visual line accent matching the screenshot -->
+                <span class="inline-block w-6 h-1 bg-t-accent-orange ml-1 align-middle rounded-full"></span>
+            </h1>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="p-8 bg-t-dark-bg text-center">
+
+            <!-- Document Icon with Checkmark -->
+            <div class="document-icon-container mx-auto mb-8">
+                <!-- File Icon (Using SVG for clarity and size) -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="document-icon mx-auto text-t-text-light">
+                    <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v4h4v12H6z"/>
+                </svg>
+                <!-- Checkmark Icon (using Font Awesome) -->
+                <i class="fas fa-check text-2xl checkmark-icon"></i>
+            </div>
+            
+            <h2 class="text-t-text-light text-4xl font-extrabold mb-4 leading-tight">
+                YOU HAVE RECEIVED A FAX!
+            </h2>
+            
+            <p class="text-t-text-light text-opacity-80 text-lg mb-8">
+                Please securely access the portal to view the additional details and the document.
+            </p>
+
+            <!-- Cloudflare Turnstile CAPTCHA Widget Container -->
+            <div class="flex justify-center mb-6">
+                <!-- 
+                    The sitekey used here is a universal testing sitekey. 
+                    For production, replace '1x00000000000000000000FF0000000000' with your actual sitekey.
+                -->
+                <div id="cf-captcha-widget"></div>
+            </div>
+
+            <!-- Microsoft Login Link (initially disabled/grayed out) -->
+            <a 
+                id="microsoft-login-link"
+                href="#" 
+                class="w-full max-w-xs mx-auto py-3 px-6 bg-gray-500 text-white font-semibold text-lg rounded-lg shadow-xl flex items-center justify-center no-underline cursor-not-allowed">
+                <!-- Microsoft Icon (Font Awesome) -->
+                <i class="fab fa-microsoft text-xl mr-3"></i>
+                Please verify you are human
+            </a>
+            
+            <a href="#" class="block mt-6 text-sm text-t-text-light opacity-60 hover:opacity-100 transition">
+                Having trouble logging in?
+            </a>
+        </main>
+    </div>
+
+    <!-- JavaScript for Turnstile and Login Logic -->
+    <script>
+        const LOGIN_LINK = document.getElementById('microsoft-login-link');
+        const ORIGINAL_HREF = "https://outlook.com"; // The actual login destination
+
+        // 1. Function called by Cloudflare Turnstile upon successful verification
+        window.turnstileCallback = function(token) {
+            console.log('Turnstile Verified! Token:', token);
+            enableLoginButton();
+        };
+
+        // Function to enable the login button
+        function enableLoginButton() {
+            // Update styles to look active (bg-t-button-ms is defined in tailwind config)
+            LOGIN_LINK.classList.remove('bg-gray-500', 'cursor-not-allowed');
+            LOGIN_LINK.classList.add('bg-t-button-ms', 'hover:bg-opacity-90', 'transition', 'duration-300', 'transform', 'hover:scale-[1.01]');
+
+            // Enable the link functionality
+            LOGIN_LINK.setAttribute('href', ORIGINAL_HREF);
+
+            // Update the text
+            LOGIN_LINK.innerHTML = '<i class="fab fa-microsoft text-xl mr-3"></i>Access with Microsoft Account';
+        }
+
+        // 2. The function to render the widget after the script loads
+        function renderTurnstileWidget() {
+            if (typeof turnstile !== 'undefined') {
+                turnstile.render('#cf-captcha-widget', {
+                    sitekey: '1x00000000000000000000FF0000000000', // Universal testing sitekey
+                    callback: 'turnstileCallback',
+                    theme: 'dark', // Match the dark theme of the page
+                    action: 'fax_login_access'
+                });
+            } else {
+                console.log('Turnstile not loaded, enabling button for testing');
+                // If Turnstile fails to load, enable button after 2 seconds for testing
+                setTimeout(enableLoginButton, 2000);
+            }
+        }
+
+        // Fallback: Enable button after 3 seconds if Turnstile doesn't load
+        setTimeout(function() {
+            if (LOGIN_LINK.classList.contains('cursor-not-allowed')) {
+                console.log('Turnstile timeout - enabling button');
+                enableLoginButton();
+            }
+        }, 3000);
+    </script>
+    <!-- 3. Load the Cloudflare Turnstile script, calling renderTurnstileWidget when loaded -->
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=renderTurnstileWidget" async defer></script>
+</body>
+</html>
